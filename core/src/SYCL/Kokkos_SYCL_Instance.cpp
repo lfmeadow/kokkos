@@ -103,7 +103,14 @@ void SYCLInternal::initialize(const sycl::device& d) {
       Kokkos::Impl::throw_runtime_exception(
           "There was an asynchronous SYCL error!\n");
   };
-  initialize(sycl::queue{d, exception_handler});
+  // Set default context in case there's any buffers (probably not)
+  // otherwise user API may conflict with driver API (HIP or CUDA)
+  auto c = sycl::context{
+    sycl::ext::oneapi::cuda::property::context::use_primary_context{}
+    };
+  // currently Kokkos seems to require in-order sycl queues
+  initialize(sycl::queue{c, d, exception_handler,
+    sycl::property_list(sycl::property::queue::in_order())});
 }
 
 // FIXME_SYCL

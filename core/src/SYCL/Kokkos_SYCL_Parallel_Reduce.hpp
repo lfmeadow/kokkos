@@ -327,13 +327,10 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                         wgroup_size - 1) /
                        wgroup_size;
       auto parallel_reduce_event = q.submit([&](sycl::handler& cgh) {
-        sycl::accessor<value_type, 1, sycl::access::mode::read_write,
-                       sycl::access::target::local>
+        sycl::local_accessor<value_type>
             local_mem(sycl::range<1>(wgroup_size) * std::max(value_count, 1u),
                       cgh);
-        sycl::accessor<unsigned int, 1, sycl::access::mode::read_write,
-                       sycl::access::target::local>
-            num_teams_done(1, cgh);
+        sycl::local_accessor<unsigned int> num_teams_done(1, cgh);
 
         const auto begin = policy.begin();
 
@@ -641,13 +638,10 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
     if (size > 1) {
       auto n_wgroups             = (size + wgroup_size - 1) / wgroup_size;
       auto parallel_reduce_event = q.submit([&](sycl::handler& cgh) {
-        sycl::accessor<value_type, 1, sycl::access::mode::read_write,
-                       sycl::access::target::local>
+        sycl::local_accessor<value_type>
             local_mem(sycl::range<1>(wgroup_size) * std::max(value_count, 1u),
                       cgh);
-        sycl::accessor<unsigned int, 1, sycl::access::mode::read_write,
-                       sycl::access::target::local>
-            num_teams_done(1, cgh);
+        sycl::local_accessor<unsigned int> num_teams_done(1, cgh);
 
         const BarePolicy bare_policy = m_policy;
 
